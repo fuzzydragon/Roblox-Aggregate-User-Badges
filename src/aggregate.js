@@ -8,6 +8,8 @@ const flags = cli.flags()
 
 const sleep = ms => new Promise(r => setTimeout(r, ms))
 
+// maybe i should package this inside roblox module..? (but its not actually how roblox does it...so maybe not.)
+// this is just a "patch" 
 function robloxURLEncode(name) {
 	return name
 		.replace(/[^A-Za-z 0-9]*/g, "")
@@ -15,7 +17,7 @@ function robloxURLEncode(name) {
 		.replace(/\-\-/g, `-`)
 }
 
-async function aggregate(data, cache) {
+async function aggregate(user, data, cache) {
 	const places = { raw: [], urls: []}
 
 	for (const { AssetId, Id, Type } of data ) {
@@ -28,14 +30,10 @@ async function aggregate(data, cache) {
 		}
 
 		cache[AssetId] = response
-
-		// const { awardingUniverse: { name, rootPlaceId } } = JSON.parse(response.body)
-
+		
 		const badge = JSON.parse(response.body)
 
 		if (badge) {
-			// const { awardingUniverse: { name, rootPlaceId } } = badge
-
 			const awardingUniverse = badge.awardingUniverse
 
 			if (awardingUniverse) {
@@ -50,27 +48,19 @@ async function aggregate(data, cache) {
 		} else {
 			console.log(`MISSING BADGE: ${AssetId, Id, Type} ???`)
 		}
-
-		// if (response.status === 200) {
-			// const { awardingUniverse: { name, rootPlaceId } } = JSON.parse(response.body)
-
-			// console.log(AssetId, rootPlaceId)
-			// places.raw.push({ AssetId, name, rootPlaceId })
-			// places.urls.push(`https://www.roblox.com/games/${rootPlaceId}/${name.replace(` `, `-`)}`)
-		// }
 	}
 
-	fs.writeFile(`./Places.json`, JSON.stringify(places, null, `\t`))
-		.then(() => console.log(`Wrote ./Places.json`))
+	fs.writeFile(`./Places_${user}.json`, JSON.stringify(places, null, `\t`))
+		.then(() => console.log(`Wrote ./Places_${user}.json`))
 	
 	fs.writeFile(`./BadgeCache.json`, JSON.stringify(cache, null, `\t`))
 }
 
+let cache
+const { [`--id`]: id } = flags
 
-fs.readFile(`./BadgeCache.json`).then(cache => {
-	fs.readFile(`./Badges.json`) 
-		.then(buff => aggregate(JSON.parse(buff), JSON.parse(cache)))	
-}).catch(() => {
-	fs.readFile(`./Badges.json`) 
-		.then(buff => aggregate(JSON.parse(buff), {}))	
-})
+fs.readFile(`./BadgesCache.json`)
+	.then(buff => cache = JSON.parse(buff))
+	.catch(() => cache = {}) // :trollface:
+	.then(() => fs.readFile(`./Badges_${id}.json`) )
+	.then(buff => aggregate(id, JSON.parse(buff), cache))
