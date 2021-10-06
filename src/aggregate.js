@@ -59,7 +59,7 @@ async function aggregate(user, data, cache) {
 let cache
 const { [`--id`]: id } = flags
 
-fs.readFile(`./BadgesCache.json`)
+fs.readFile(`./BadgeCache.json`)
 	.then(buff => cache = JSON.parse(buff))
 	.catch(() => cache = {}) // :trollface:
 	.then(() => fs.readFile(`./Badges_${id}.json`) )
