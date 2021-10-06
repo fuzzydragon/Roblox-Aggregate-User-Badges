@@ -36,8 +36,8 @@ async function generate(user, id) {
 		}
 	}
 
-	fs.writeFile(`./Badges.json`, JSON.stringify(badges, null, `\t`))
-		.then(() => console.log(`Wrote ./Badges.json`))
+	fs.writeFile(`./Badges_${id}.json`, JSON.stringify(badges, null, `\t`))
+		.then(() => console.log(`Wrote ./Badges_${id}.json`))
 }
 
 const user = flags[`--user`],
